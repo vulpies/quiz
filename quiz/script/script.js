@@ -111,6 +111,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 </label>`
                 formAnswers.appendChild(answerItem)
             })
+
+            if (numberQuestion === 0) {
+                prevBtn.hidden = true
+            } else if (numberQuestion === questions.length - 1) {
+                nextBtn.hidden = true
+            } else {
+                prevBtn.hidden = false
+                nextBtn.hidden = false
+            }
         }
 
         const renderQuestions = (indexQuestion) => {
