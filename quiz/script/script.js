@@ -111,10 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </label>`
                 formAnswers.appendChild(answerItem)
             })
-
-            if ((numberQuestion = 0)) {
-                prevBtn.remove
-            }
         }
 
         const renderQuestions = (indexQuestion) => {
