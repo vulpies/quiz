@@ -6,6 +6,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const formAnswers = document.querySelector("#formAnswers")
     const nextBtn = document.querySelector("#next")
     const prevBtn = document.querySelector("#prev")
+    const burgerBtn = document.getElementById("burger")
+    const sendBtn = document.querySelector("#send")
+    const closeBtn = document.querySelector(".close")
+
+    //код продублирован, чтобы при обновлении страницы бургера не было изначально
+    if (document.documentElement.clientWidth < 768) {
+        burgerBtn.style.display = "flex"
+    } else {
+        burgerBtn.style.display = "none"
+    }
+
+    window.addEventListener("resize", () => {
+        if (document.documentElement.clientWidth < 768) {
+            burgerBtn.style.display = "flex"
+        } else {
+            burgerBtn.style.display = "none"
+        }
+    })
 
     const questions = [
         {
@@ -82,6 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     ]
 
+    burgerBtn.addEventListener("click", () => {
+        modalBlock.classList.add("d-block")
+        playTest()
+    })
+
     btnOpenModal.addEventListener("click", () => {
         modalBlock.classList.add("d-block")
         playTest()
@@ -91,8 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
         modalBlock.classList.remove("d-block")
     })
 
+    closeBtn.addEventListener("click", () => {
+        modalBlock.classList.remove("d-block")
+    })
+
     const playTest = () => {
         let numberQuestion = 0
+        const finalAnswers = []
 
         const renderAnswers = (index) => {
             questions[index].answers.forEach((answer) => {
@@ -104,39 +132,90 @@ document.addEventListener("DOMContentLoaded", () => {
                     "justify-content-center"
                 )
 
-                answerItem.innerHTML = `<input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none">
+                answerItem.innerHTML = `<input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none" value="${answer.title}">
                 <label for="${answer.title}" class="d-flex flex-column justify-content-between">
                 <img class="answerImg" src="${answer.url}" alt="burger">
                 <span>${answer.title}</span>
                 </label>`
                 formAnswers.appendChild(answerItem)
             })
-
-            if (numberQuestion === 0) {
-                prevBtn.hidden = true
-            } else if (numberQuestion === questions.length - 1) {
-                nextBtn.hidden = true
-            } else {
-                prevBtn.hidden = false
-                nextBtn.hidden = false
-            }
         }
 
         const renderQuestions = (indexQuestion) => {
             formAnswers.innerHTML = ""
-            questionTitle.textContent = `${questions[indexQuestion].question}`
 
+            if (numberQuestion === 0) {
+                prevBtn.hidden = true
+                sendBtn.classList.add("d-none")
+                /* другой способ
+                prevBtn.classList.add("d-none")
+                prevBtn.classList.remove("d-none") */
+            } else if (numberQuestion === questions.length) {
+                prevBtn.hidden = true
+                nextBtn.hidden = true
+                sendBtn.classList.remove("d-none")
+                formAnswers.innerHTML = `
+                <div class="form-group">
+                <label for="numberPhone">Enter your number</label>
+                <input type ="phone" class="form-control" id="numberPhone">
+                </div>
+                `
+            } else if (numberQuestion === questions.length + 1) {
+                sendBtn.hidden = true
+                formAnswers.textContent = "Спасибо за пройденный тест!"
+                setTimeout(() => {
+                    modalBlock.classList.remove("d-block")
+                }, 2000)
+            } else {
+                prevBtn.hidden = false
+                nextBtn.hidden = false
+                sendBtn.classList.add("d-none")
+                questionTitle.textContent = `${questions[indexQuestion].question}`
+            }
             renderAnswers(indexQuestion)
         }
+
         renderQuestions(numberQuestion)
 
+        function checkAnswer() {
+            const obj = {}
+
+            const inputs = [...formAnswers.elements].filter(
+                (input) => input.checked || input.id === "numberPhone"
+            )
+
+            inputs.forEach((input, index) => {
+                if (
+                    numberQuestion >= 0 &&
+                    numberQuestion <= questions.length - 1
+                ) {
+                    obj[`${index}_${questions[numberQuestion].question}`] =
+                        input.value
+                }
+
+                if (numberQuestion === questions.length) {
+                    obj["Номер телефона"] = input.value
+                }
+            })
+
+            finalAnswers.push(obj)
+            console.log(finalAnswers)
+        }
+
         nextBtn.onclick = () => {
+            checkAnswer()
             numberQuestion++
             renderQuestions(numberQuestion)
         }
 
         prevBtn.onclick = () => {
             numberQuestion--
+            renderQuestions(numberQuestion)
+        }
+
+        sendBtn.onclick = () => {
+            checkAnswer()
+            numberQuestion++
             renderQuestions(numberQuestion)
         }
     }
